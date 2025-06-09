@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>Ping - Bark 推送</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    :root {
+      --primary: #5851db;
+      --primary-light: #7974e2;
+      --primary-dark: #483cd1;
+      --success: #2dd4bf;
+      --error: #f472b6;
+      --text: #1e293b;
+      --bg-light: #f8fafc;
+      --bg-dark: #e2e8f0;
+      --card-bg: rgba(255, 255, 255, 0.95);
+      --shadow: rgba(15, 23, 42, 0.1);
+      --accent: hsl(243, 30%, 90%);
+      --secondary: #ff6b6b;
+      --tertiary: #48bb78;
+      --quaternary: #6b46c1;
+      --bg-accent1: #feca57;
+      --bg-accent2: #00d2d3;
+      --ripple-color: rgba(255, 107, 107, 0.2);
+      --star-color: #ffffff;
+      --blur-color: rgba(139, 92, 246, 0.5);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      min-height: 100vh;
+      background: linear-gradient(
+        45deg,
+        var(--bg-light),
+        var(--bg-dark),
+        var(--accent),
+        var(--bg-accent1),
+        var(--bg-accent2)
+      );
+      background-size: 400% 400%;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      animation: gradientShiftBody 15s ease infinite,
+                 subtleRotate 20s ease-in-out infinite;
+      position: relative;
+    }
+
+    @keyframes gradientShiftBody {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    @keyframes subtleRotate {
+      0%, 100% { transform: rotate(0deg); }
+      50% { transform: rotate(2deg); }
+    }
+
+    body::before {
+      content: '';
+      position: absolute;
+      width: 200px;
+      height: 200px;
+      background: var(--ripple-color);
+      border-radius: 50%;
+      top: 10%;
+      left: 10%;
+      animation: ripple 8s ease-in-out infinite;
+      z-index: -2;
+      opacity: 0;
+    }
+
+    body::after {
+      content: '';
+      position: absolute;
+      width: 300px;
+      height: 300px;
+      background: rgba(72, 187, 120, 0.15);
+      border-radius: 50%;
+      bottom: 15%;
+      right: 15%;
+      animation: ripple 10s ease-in-out infinite 2s;
+      z-index: -2;
+      opacity: 0;
+    }
+
+    @keyframes ripple {
+      0% { transform: scale(0); opacity: 0.5; }
+      50% { transform: scale(2); opacity: 0.2; }
+      100% { transform: scale(3); opacity: 0; }
+    }
+
+    .container {
+      max-width: 440px;
+      width: 100%;
+      padding: 2.5rem;
+      background: var(--card-bg);
+      border-radius: 24px;
+      box-shadow: 0 10px 40px var(--shadow);
+      position: relative;
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      animation: rotateFadeIn 0.8s ease-out forwards,
+                 floatPulse 4s ease-in-out infinite;
+    }
+
+    /* 旋转淡入动画 */
+    @keyframes rotateFadeIn {
+      from { opacity: 0; transform: rotate(-10deg) scale(0.9); }
+      to { opacity: 1; transform: rotate(0deg) scale(1); }
+    }
+
+    /* 浮动加脉动动画 */
+    @keyframes floatPulse {
+      0%, 100% { transform: translateY(0) scale(1); }
+      50% { transform: translateY(-10px) scale(1.02); }
+    }
+
+    .container::before {
+      content: '';
+      position: absolute;
+      top: -15px;
+      left: -15px;
+      right: -15px;
+      bottom: -15px;
+      border-radius: 28px;
+      background: radial-gradient(circle, rgba(88, 81, 219, 0.3), rgba(255, 107, 107, 0.1), transparent);
+      z-index: -1;
+      animation: glowBreathe 6s ease-in-out infinite;
+      opacity: 0.5;
+    }
+
+    /* 光晕呼吸动画 */
+    @keyframes glowBreathe {
+      0%, 100% { transform: scale(1); opacity: 0.3; filter: blur(5px); }
+      50% { transform: scale(1.1); opacity: 0.6; filter: blur(8px); }
+    }
+
+    .container::after {
+      content: '';
+      position: absolute;
+      top: -1px;
+      left: -1px;
+      right: -1px;
+      bottom: -1px;
+      border-radius: 24px;
+      border: 2px solid transparent;
+      background: linear-gradient(45deg, var(--primary), var(--secondary), var(--tertiary));
+      background-size: 200% 200%;
+      animation: borderFlicker 5s ease infinite;
+      z-index: -1;
+      opacity: 0.6;
+    }
+
+    @keyframes borderFlicker {
+      0% { border-color: rgba(88, 81, 219, 0.6); background-position: 0% 50%; }
+      50% { border-color: rgba(255, 107, 107, 0.6); background-position: 100% 50%; }
+      100% { border-color: rgba(88, 81, 219, 0.6); background-position: 0% 50%; }
+    }
+
+    .particles {
+      position: fixed;
+      width: 100vw;
+      height: 100vh;
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    .particle {
+      position: absolute;
+      background: var(--primary);
+      border-radius: 50%;
+      animation: drift 20s infinite ease-in-out;
+    }
+
+    @keyframes drift {
+      0%, 100% { transform: translate(0, 0); opacity: 0.15; }
+      50% { transform: translate(var(--move-x), var(--move-y)); opacity: 0.3; }
+    }
+
+    .star-particle {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      background: var(--star-color);
+      clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+      animation: starDrift 15s infinite ease-in-out,
+                 starTwinkle 2s infinite ease-in-out;
+    }
+
+    @keyframes starDrift {
+      0%, 100% { transform: translate(0, 0) rotate(0deg); }
+      50% { transform: translate(var(--move-x), var(--move-y)) rotate(180deg); }
+    }
+
+    @keyframes starTwinkle {
+      0%, 100% { opacity: 0.2; }
+      50% { opacity: 0.8; }
+    }
+
+    .blur-particle {
+      position: absolute;
+      background: var(--blur-color);
+      border-radius: 50%;
+      filter: blur(4px);
+      animation: blurDrift 25s infinite ease-in-out,
+                 blurPulse 3s infinite ease-in-out;
+    }
+
+    @keyframes blurDrift {
+      0%, 100% { transform: translate(0, 0); }
+      50% { transform: translate(var(--move-x), var(--move-y)); }
+    }
+
+    @keyframes blurPulse {
+      0%, 100% { transform: scale(1); opacity: 0.3; }
+      50% { transform: scale(1.5); opacity: 0.5; }
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .header h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      background: linear-gradient(45deg, var(--primary), var(--secondary), var(--tertiary));
+      background-size: 200% 200%;
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      animation: gradientShiftText 5s ease infinite;
+    }
+
+    @keyframes gradientShiftText {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .header p {
+      color: #64748b;
+      font-size: 0.95rem;
+      margin-top: 0.5rem;
+    }
+
+    .input-group {
+      margin-bottom: 1.5rem;
+      position: relative;
+    }
+
+    .input-group::before {
+      content: '';
+      position: absolute;
+      left: 1.2rem;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 1rem;
+      color: var(--primary);
+    }
+
+    .input-group:nth-child(1)::before {
+      content: '🔑';
+    }
+
+    .input-group:nth-child(2)::before {
+      content: '💬';
+    }
+
+    input {
+      width: 100%;
+      padding: 1rem 1.2rem 1rem 3rem;
+      border: 1px solid var(--accent);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.7);
+      font-size: 1rem;
+      transition: all 0.3s ease;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02);
+    }
+
+    input:focus {
+      outline: none;
+      border-color: var(--tertiary);
+      box-shadow: 0 0 0 3px rgba(72, 187, 120, 0.2);
+      background: white;
+      animation: pulse 0.5s;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+
+    input::placeholder {
+      color: #94a3b8;
+    }
+
+    label {
+      position: absolute;
+      left: 1.2rem;
+      top: -0.6rem;
+      font-size: 0.85rem;
+      color: #64748b;
+      background: var(--card-bg);
+      padding: 0 0.5rem;
+      transition: all 0.3s ease;
+    }
+
+    button {
+      width: 100%;
+      padding: 1.2rem;
+      background: linear-gradient(45deg, var(--primary), var(--primary-dark));
+      border: none;
+      border-radius: 12px;
+      color: white;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(88, 81, 219, 0.3);
+    }
+
+    button::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      transition: width 0.6s ease, height 0.6s ease;
+    }
+
+    button:hover::before {
+      width: 300px;
+      height: 300px;
+    }
+
+    button:hover {
+      background: linear-gradient(45deg, var(--primary-light), var(--secondary));
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+    }
+
+    button.loading::after {
+      content: "";
+      width: 20px;
+      height: 20px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .toast {
+      position: fixed;
+      bottom: -50px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 0.8rem 1.8rem;
+      border-radius: 10px;
+      color: white;
+      font-size: 0.95rem;
+      font-weight: 500;
+      opacity: 0;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    }
+
+    .toast.show {
+      opacity: 1;
+      bottom: 30px;
+    }
+
+    .toast.success { background: var(--success); }
+    .toast.error { background: var(--error); }
+  </style>
+</head>
+<body>
+  <div class="particles" id="particlesContainer"></div>
+  
+  <div class="container">
+    <div class="header">
+      <h1>Ping - Bark</h1>
+      <p>优雅的推送体验</p>
+    </div>
+    
+    <div class="input-group">
+      <label>Bark Key</label>
+      <input type="text" id="barkKeyInput" placeholder="请输入您的 Bark Key">
+    </div>
+    
+    <div class="input-group">
+      <label>推送内容</label>
+      <input type="text" id="bodyTextInput" placeholder="请输入推送消息">
+    </div>
+    
+    <button id="pingBtn">发送推送 <span>✨</span></button>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    function createParticles() {
+      const container = document.getElementById('particlesContainer');
+      const colors = [
+        '#5851db', '#7974e2', '#a78bfa', '#c7d2fe', '#e0e7ff',
+        '#ff6b6b', '#48bb78', '#6b46c1'
+      ];
+
+      for (let i = 0; i < 40; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        const size = Math.random() * 15 + 5;
+        particle.style.width = `${size}px`;
+        particle.style.height = `${size}px`;
+        particle.style.left = `${Math.random() * 100}%`;
+        particle.style.top = `${Math.random() * 100}%`;
+        particle.style.animationDelay = `${Math.random() * 20}s`;
+        particle.style.setProperty('--move-x', `${(Math.random() - 0.5) * 150}px`);
+        particle.style.setProperty('--move-y', `${(Math.random() - 0.5) * 150}px`);
+        particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        container.appendChild(particle);
+      }
+
+      for (let i = 0; i < 40; i++) {
+        const star = document.createElement('div');
+        star.className = 'star-particle';
+        star.style.left = `${Math.random() * 100}%`;
+        star.style.top = `${Math.random() * 100}%`;
+        star.style.animationDelay = `${Math.random() * 15}s`;
+        star.style.setProperty('--move-x', `${(Math.random() - 0.5) * 100}px`);
+        star.style.setProperty('--move-y', `${(Math.random() - 0.5) * 100}px`);
+        container.appendChild(star);
+      }
+
+      for (let i = 0; i < 40; i++) {
+        const blur = document.createElement('div');
+        blur.className = 'blur-particle';
+        const size = Math.random() * 20 + 10;
+        blur.style.width = `${size}px`;
+        blur.style.height = `${size}px`;
+        blur.style.left = `${Math.random() * 100}%`;
+        blur.style.top = `${Math.random() * 100}%`;
+        blur.style.animationDelay = `${Math.random() * 25}s`;
+        blur.style.setProperty('--move-x', `${(Math.random() - 0.5) * 120}px`);
+        blur.style.setProperty('--move-y', `${(Math.random() - 0.5) * 120}px`);
+        container.appendChild(blur);
+      }
+    }
+
+    function showToast(message, type = 'success') {
+      const toast = document.getElementById('toast');
+      toast.className = `toast ${type}`;
+      toast.textContent = message;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    const title = "ping";
+    const sound = "default";
+    const level = 1;
+
+    document.getElementById("pingBtn").addEventListener("click", async function(e) {
+      const btn = this;
+      const barkKey = document.getElementById('barkKeyInput').value;
+      const bodyText = document.getElementById('bodyTextInput').value;
+      
+      if (!barkKey || !bodyText) {
+        showToast("请填写所有字段", 'error');
+        return;
+      }
+
+      btn.classList.add('loading');
+      btn.disabled = true;
+      
+      try {
+        const url = `https://api.day.app/${barkKey}/${encodeURIComponent(title)}/${encodeURIComponent(bodyText)}?sound=${sound}&level=${level}`;
+        const response = await fetch(url);
+        const data = await response.json();
+
+        if (data.code === 200) {
+          showToast("推送成功发送！", 'success');
+        } else {
+          showToast(`推送失败：${data.message}`, 'error');
+        }
+      } catch (error) {
+        showToast("网络错误，请稍后重试", 'error');
+        console.error(error);
+      } finally {
+        btn.classList.remove('loading');
+        btn.disabled = false;
+      }
+    });
+
+    createParticles();
+  </script>
+</body>
+</html>
